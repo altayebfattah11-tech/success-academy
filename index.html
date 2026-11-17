@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>إدارة الطلاب</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f1f4f9;
+  color: #202b3c;
+}
+header {
+  background: #172b4d;
+  color: white;
+  padding: 25px 18px;
+  text-align: center;
+}
+header h2 { margin: 0 0 8px; }
+main { padding: 18px; max-width: 600px; margin: auto; }
+.card {
+  background: white;
+  padding: 18px;
+  border-radius: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 3px 12px #00000010;
+}
+input, button {
+  width: 100%;
+  padding: 13px;
+  margin-top: 10px;
+  border-radius: 9px;
+  font-size: 16px;
+}
+input {
+  border: 1px solid #ccd4df;
+}
+button {
+  border: none;
+  background: #1769aa;
+  color: white;
+  cursor: pointer;
+}
+.delete { background: #c0392b; width: auto; padding: 8px 13px; }
+.student {
+  border-bottom: 1px solid #eee;
+  padding: 12px 0;
+}
+.small { color: #68778d; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h2>🎓 إدارة الطلاب</h2>
+  <div>نظام بسيط لإدارة بيانات الطلاب</div>
+</header>
+
+<main>
+
+<div class="card">
+  <h3>إضافة طالب جديد</h3>
+  <input id="name" placeholder="اسم الطالب">
+  <input id="grade" type="number" placeholder="درجة الطالب من 100">
+  <button onclick="addStudent()">إضافة الطالب</button>
+</div>
+
+<div class="card">
+  <h3>إحصائيات الطلاب</h3>
+  <p>عدد الطلاب: <b id="count">0</b></p>
+  <p>متوسط الدرجات: <b id="average">0</b></p>
+</div>
+
+<div class="card">
+  <h3>البحث عن طالب</h3>
+  <input id="search" placeholder="اكتب اسم الطالب" oninput="render()">
+</div>
+
+<div class="card">
+  <h3>قائمة الطلاب</h3>
+  <div id="students"></div>
+</div>
+
+</main>
+
+<script>
+let students = JSON.parse(localStorage.getItem("students") || "[]");
+
+function save() {
+  localStorage.setItem("students", JSON.stringify(students));
+}
+
+function addStudent() {
+  let name = document.getElementById("name").value.trim();
+  let grade = Number(document.getElementById("grade").value);
+
+  if (!name || document.getElementById("grade").value === "" ||
+      grade < 0 || grade > 100) {
+    alert("أدخل الاسم ودرجة صحيحة من 0 إلى 100");
+    return;
+  }
+
+  students.push({name, grade});
+  save();
+
+  document.getElementById("name").value = "";
+  document.getElementById("grade").value = "";
+
+  render();
+}
+
+function removeStudent(index) {
+  students.splice(index, 1);
+  save();
+  render();
+}
+
+function render() {
+  let list = document.getElementById("students");
+  let search = document.getElementById("search").value.trim().toLowerCase();
+
+  list.innerHTML = "";
+
+  students.forEach((s, i) => {
+    if (!s.name.toLowerCase().includes(search)) return;
+
+    let div = document.createElement("div");
+    div.className = "student";
+
+    let info = document.createElement("div");
+    info.textContent = s.name + " — الدرجة: " + s.grade;
+
+    let status = document.createElement("div");
+    status.className = "small";
+    status.textContent = s.grade >= 50 ? "ناجح" : "يحتاج إلى تحسين";
+
+    let btn = document.createElement("button");
+    btn.className = "delete";
+    btn.textContent = "حذف";
+    btn.onclick = () => removeStudent(i);
+
+    div.append(info, status, btn);
+    list.appendChild(div);
+  });
+
+  document.getElementById("count").textContent = students.length;
+
+  let total = students.reduce((sum, s) => sum + s.grade, 0);
+  document.getElementById("average").textContent =
+    students.length ? (total / students.length).toFixed(1) : 0;
+}
+
+render();
+</script>
+
+</body>
+</html>
+
+
